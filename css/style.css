@@ -1,0 +1,15 @@
+@charset "utf-8";
+/* CSS Document */
+body{font-family: 'Open Sans', sans-serif;}
+h1{ color:#408BC1}
+h4{line-height: 22px;    font-weight: 400 !important;    color: #41a9c1;    letter-spacing: 0px;    font-size: 15px;    text-transform: uppercase;}
+
+
+/*elements*/
+.headline_title{ color:#000 !important; font-size:22px !important}
+#timezone{ color:#888}
+#contres{ display:none; background:efefef; border:1px solid #ccc; margin-top:20px;}
+.worst{ color:#E40000}
+.worst_text{    color: #de5252;    font-weight: bold !important;}
+.best_text{    color: #82b96c;    font-weight: bold !important;}
+.brk_text{    font-weight: bold !important;}

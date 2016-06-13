@@ -1,10 +1,131 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Hello</title>
-</head>
+<!-- 
+Title  : Monthly Energy Report
+Author : Arman Grigoryan
+Date   : 6/12/2016
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    <title>Welcome to Your Monthly Energy Report</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet">
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+    	<h1 class="headline_title">Welcome to Your Monthly Energy Report</h1><div id="timezone"></div>
+        <hr>
+     	<div class="row">
+            <div class="col-md-4 text-center">
+              <h4>Your total energy usage over the course of the month</h4>
+              <p id="monthly_usage"></p>
+            </div><!--/.col-xs-6.col-lg-4-->
+            <div class="col-md-4 text-center">
+               <h4>Your average energy use during the weekdays for this month</h4>
+               <p id="weekday_average"></p>
+            </div><!--/.col-xs-6.col-lg-4-->
+             <div class="col-md-4 text-center">
+               <h4>Your average energy use for all days in this month</h4>
+               <p id="average_day"></p>
+              
+            </div><!--/.col-xs-6.col-lg-4-->
+            
+          </div><!--/row-->
+          
+          <div class="clearfix"></div><p>&nbsp;</p>
+           <div class="row text-center"><p><a class="btn btn-info stat" href="#" role="button" rel="day_stats" >Click Here for Detailed Explanation</a></p></div> 
+            <div class="clearfix"></div>
+          <div id="contres" class="col-xs-12 col-lg-12"></div>
+          
+        </div><!--/.col-xs-12.col-sm-9-->
+    </div>
 
-<body>
-</body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script>
+    	/*$.getJSON('data.json', function(data){
+			console.log(data);
+		});*/
+		$.ajax({
+			url:'data.json',
+			dataType:'json',
+			type:'get',
+			cache:false,
+			success:function(fval){
+				$("#timezone").html("<p>Timezone : "+(fval.timezone)+"</p>");
+				$("#weekday_average").html("<h1>"+parseFloat(fval.weekday_average).toFixed(3)+"</h1>");
+				$("#average_day").html("<h1>"+parseFloat(fval.average_day).toFixed(1)+"</h1>");
+				$(fval.monthly_usage).each(function(index, value) {
+					//console.log(value);	
+                    $("#monthly_usage").html("<h1>"+parseFloat(value).toFixed(1)+"</h1>");
+                });
+			}
+		});
+		$(".stat").click(function(){//for detailed stat.
+			if($(this).attr('rel')=="day_stats"){
+				$("#contres").show(500, function(){
+					$.ajax({
+					url:'data.json',
+					dataType:'json',
+					type:'get',
+					cache:false,
+						success:function(mval){
+							
+							var BB = "";
+							var WW = "";
+							var dateStringB = "";
+							var dateStringW = "";
+							var myDateB		= "";
+							var myDateW		= "";
+							
+							$.each(mval.best_three.data, function(keybest, valbest) {	
+															
+									myDateB = new Date(1000*valbest[0]);
+									dateStringB=myDateB.toUTCString();
+									dateStringB=dateStringB.split(' ').slice(0, 4).join(' ');/**/							
+									BB = BB+"<tr><td>"+(dateStringB)+"</td><td>"+parseFloat(valbest[1]).toFixed(1)+"</td></tr>";
+							})
+							var best_m = '<div class="col-md-6 "><h4 class="best_text">Best three days of the month</h4><table width="100%" class="table">'+BB+'<tr><td><strong>Percentage</strong></td><td>'+mval.best_three.percentage+'%</td></tr> <tr class="success"><td><strong>Total</strong></td><td>'+parseFloat(mval.best_three.total).toFixed(1)+'</td></tr></table></div>';
+							
+							$.each(mval.worst_three.data, function(keyworst, valworst) {	
+									myDateW = new Date(1000*valworst[0]);
+									dateStringW=myDateW.toUTCString();
+									dateStringW=dateStringW.split(' ').slice(0, 4).join(' ');
+									WW = WW+"<tr><td>"+(dateStringW)+"</td><td>"+parseFloat(valworst[1]).toFixed(1)+"</td></tr>";
+							})
+							
+							var worst_m = '<div class="col-md-6 "><h4 class="worst_text">Worst three days of the month</h4><table width="100%" class="table">'+WW+'<tr ><td><strong>Percentage</strong></td><td>'+mval.worst_three.percentage+'%</td></tr> <tr class="danger"><td><strong>Total</strong></td><td>'+parseFloat(mval.worst_three.total).toFixed(1)+'</td></tr></table></div><div class="clearfix"></div>';
+							
+							//breakdown
+							  var tds = "";
+							 $.each(mval.day_stats, function(indexdate, element) {	
+								myDate = new Date(1000*indexdate);
+								dateString=myDate.toUTCString();
+								dateString=dateString.split(' ').slice(0, 4).join(' ');
+								tds = tds+"<tr><td>"+(dateString)+"</td><td>"+parseFloat(element).toFixed(1)+"</td></tr>";	 //detailed parametrs 
+							 })
+								
+							  $("#contres").html(best_m+worst_m+"<h4 class='brk_text'>Breakdown by days</h4><table class='table table-striped'><tr><th>Date</th><th>Usage</th></tr>"+tds+"</table>"); //building html table
+						
+						}
+					});
+				
+				
+				})
+				
+		
+			}
+			
+		});
+    </script>    
+    <script src="js/bootstrap.min.js"></script>
+  </body>
 </html>
